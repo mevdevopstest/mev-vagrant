@@ -1,0 +1,56 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Fix locale
+      shell: export LANGUAGE="en_US.UTF-8"; echo 'LANGUAGE="en_US.UTF-8"' >> /etc/default/locale; echo 'LC_ALL="en_US.UTF-8"' >> /etc/default/locale
+
+    - name: Upgrade pakages
+      apt: update_cache=yes upgrade=yes
+
+    - name: Add docker GPG key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - warn=no
+
+    - name: Add docker repo
+      apt_repository:
+        repo: 'deb https://download.docker.com/linux/ubuntu trusty stable'
+        state: present
+
+    - name: Install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+
+    - name: Add jenkins GPG key
+      shell: curl -fsSL https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add - warn=no
+
+    - name: Add jenkins repo
+      apt_repository:
+        repo: 'deb http://pkg.jenkins.io/debian-stable binary/'
+        state: present
+
+    - name: Install default-jre-headless
+      apt:
+        name: default-jre-headless
+        state: latest
+
+    - name: Install jenkins
+      apt:
+        name: jenkins
+        state: latest
+
+    - name: Add users to docker group
+      user:
+        name: "{{ item }}"
+        groups: docker
+        append: yes
+      with_items:
+         - jenkins
+         - vagrant
+
+    - name: Get Jenkins password
+      shell: sleep 15s && cat /var/lib/jenkins/secrets/initialAdminPassword 
+      register: pass
+
+    - debug: msg="Jenkins password is {{ pass.stdout }}"
+    - debug: msg="You need 'vagrant reload' for docker permissions to take effect"

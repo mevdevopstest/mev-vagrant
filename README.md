@@ -1,0 +1,5 @@
+- Pull this repo and run `vagrant up`
+- After all jobs done, copy admin password and run `vagrant reload` (for docker permissions to take effect)
+- Login to jenkins: http://localhost:8080/ and install sugested plugins
+- Run `vagrant ssh -c '~/jenkins/run.sh'` to install needed plugins, create credentials and import the job.
+- Login to jenkins again and run job to build. After the job will successfully build, app will be available at http://localhost:8081/
